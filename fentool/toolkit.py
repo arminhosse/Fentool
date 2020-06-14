@@ -322,6 +322,24 @@ class Fentool(object):
     def model_compare(models, input_trans, output_trans, encoder_types,
                       df, target, n_splits=10, boxplot=False,
                       metric='r2'):
+        """
+
+        Parameters
+        ----------
+        models
+        input_trans
+        output_trans
+        encoder_types
+        df
+        target
+        n_splits
+        boxplot
+        metric
+
+        Returns
+        -------
+
+        """
 
         # loop over case names
         scores = pd.DataFrame()

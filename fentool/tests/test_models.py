@@ -109,6 +109,6 @@ class TestModel(TestCase):
 
         my_model.setup_feature_target(TestModel.x, TestModel.y)
 
-        score = my_model.evaluate_model()
+        score = my_model.evaluate_model(my_model.x, my_model.y)
 
         self.assertAlmostEqual(score.mean(), 0.65, 1, msg='Unexpected score')
