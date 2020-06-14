@@ -7,7 +7,6 @@ from fentool.toolkit import Fentool
 import pytest
 import os
 import pandas as pd
-import seaborn as sns
 
 from fentool.pre_process.encoders import Encoder
 from fentool.pre_process.transformers import Minmax

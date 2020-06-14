@@ -113,7 +113,7 @@ class Fentool(object):
         # check for the supported model types for assessing feature eng
         # effectiveness
         if self.model_type not in ('linreg', 'lasso', 'lassocv',
-                                   'ridge', 'ridgecv', 'rfr', 'xgb'
+                                   'ridge', 'ridgecv', 'rfr',
                                    'svr'):
             raise ValueError('Not supported model type {} '
                              .format(self.model_type))

@@ -24,15 +24,18 @@ standard deviations.
 
 2) __General Model Class in [models.py](,/fentool/models,py)__<br/>
 This is a general class wrapper around already implemented models. It adds a number of different methods
-such that user is enbale run differnt models using the same fit and predict mehtod. It also provided scoring
+such that user is enable run different models using the same fit and predict method. It also provided scoring
 based on the cross-validation methods. Currently time-series and classification is not supported by this package.
+__In order to expand this class one can in essence create a Baseclass with the additional functionality and have 
+the main Model class inherit from each selected model class (Lasso, Ridge, ...) by the user and the created Baseclass. This 
+removes the need for a lot of code repetition.__<br>  
 
 3) __Encoders in [encoders.py](./fentool/pre_process/encoders.py)__<br/> 
 This class encompasses different encoding methods such as ordinal and one-hot encoding. This can also be accessed separately 
 by the user without going through toolkit. 
 
 4) __Transformers in [transformers.py](./fentool/pre_process/transformers.py)__<br/>
-This class has implementation for minmax normalization and standardization using mean and standard deviation. The general idear is 
+This class has implementation for minmax normalization and standardization using mean and standard deviation. The general idea is 
 to include many more transformation features within this routine. The upcoming feature is the feature combinations based on user 
 input as well as feature importance features based on feature permutation techniques. 
 
@@ -58,7 +61,7 @@ scores = fent.model_compare(models=models,
 ```
 In the above example fentool combines the models, encoder types as well as input
 and output treatment effects and outputs a dataframe containing the combined use cases and their respective scoring.
-In addition to the treatment and encoding settins one needs to provide the dataframe as well as the target variable in that 
+In addition to the treatment and encoding settings one needs to provide the dataframe as well as the target variable in that 
 dataframe.
 
 Other examples of usage are given here with how one can focus on a single case to evaluate the scoring on the test(Default) set.

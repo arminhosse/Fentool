@@ -129,7 +129,7 @@ class Model(object):
         self.train_test_split_()
 
         # fit the model
-        self._model.fit(self.x, self.y)
+        self._model.fit(self.x, self.y.values.reshape(-1))
 
     def predict(self, x):
         """ Wrapper for model fit method
