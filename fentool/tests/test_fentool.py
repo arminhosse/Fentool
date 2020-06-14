@@ -1,16 +1,11 @@
 """Unittest function for fentool functios """
 
-from unittest import TestCase, skipUnless
-import warnings
-from fentool.toolkit import Fentool
-
-import pytest
 import os
+import warnings
+from unittest import TestCase
 import pandas as pd
 
-from fentool.pre_process.encoders import Encoder
-from fentool.pre_process.transformers import Minmax
-
+from fentool.toolkit import Fentool
 
 RESOURCE_PATH = '%s/resources' % os.path.dirname(os.path.realpath(__file__))
 
@@ -27,7 +22,7 @@ class TestFentool(TestCase):
         fent = Fentool(sup_learning_type='regression',
                        input_treatment='normalize',
                        output_treatment='normalize',
-                       test_size= 0.4,
+                       test_size=0.4,
                        model_type='linreg')
 
         self.assertTrue(fent.sup_learning_type == 'regression',
@@ -48,7 +43,7 @@ class TestFentool(TestCase):
         fent.df = TestFentool.df.copy()
         fent.clean_nans()
 
-        self.assertEqual(fent.df.shape, (2046,12),
+        self.assertEqual(fent.df.shape, (2046, 12),
                          msg='Unexpected dataframe shape after nan removals')
 
         fent.df = TestFentool.df
@@ -129,11 +124,11 @@ class TestFentool(TestCase):
 
         fent.feature_encoder()
 
-        self.assertTrue((fent.x_trans.max()==1).all(),
+        self.assertTrue((fent.x_trans.max() == 1).all(),
                         msg="Detected max values outside of"
                             " normalization range")
 
-        self.assertTrue((fent.x_trans.min()==0).all(),
+        self.assertTrue((fent.x_trans.min() == 0).all(),
                         msg="Detected min values outside of "
                             "normalization range")
 
@@ -160,9 +155,6 @@ class TestFentool(TestCase):
                                msg="Unexpected fit coefficient with "
                                    "sample data")
 
-        self.assertAlmostEqual(fent.model.score(), 0.68, 1,
-                               msg="Unexpected model score on test date")
-
     def test_evaluate_model(self):
 
         fent = Fentool(encoder_type='one-hot', input_treatment='normalize',
@@ -179,7 +171,7 @@ class TestFentool(TestCase):
         fent = Fentool()
 
         models = ['linreg']
-        encoder_types =['one-hot']
+        encoder_types = ['one-hot']
         input_trans = [None, 'normalize', 'standardize']
         output_trans = ['standardize']
 
@@ -188,9 +180,9 @@ class TestFentool(TestCase):
             scores = fent.model_compare(models=models,
                                         encoder_types=encoder_types,
                                         input_trans=input_trans,
-                                        output_trans = output_trans,
+                                        output_trans=output_trans,
                                         df=TestFentool.df,
                                         target='median_house_value')
 
-        self.assertEqual(scores.shape, (10,3), msg="Missing score number "
-                                                   "for one of the cases")
+        self.assertEqual(scores.shape, (10, 3), msg="Missing score number "
+                                                    "for one of the cases")

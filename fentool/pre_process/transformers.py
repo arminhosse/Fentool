@@ -6,7 +6,7 @@ import abc
 import pandas as pd
 
 
-class Minmax(object):
+class Minmax():
     """ Minmax class to transform and fit each column of a data frame
     to its corresponding minimum and maximum.
 
@@ -116,7 +116,7 @@ class Minmax(object):
         return df_inv
 
 
-class Standard(object):
+class Standard():
     """ Class method for standardization with mean and standard deviation
     """
 

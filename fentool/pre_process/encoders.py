@@ -4,7 +4,7 @@
 import pandas as pd
 
 
-class Encoder(object):
+class Encoder():
     """ Encoder class for numerical and categorical data sets.
 
     Parameters

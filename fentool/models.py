@@ -16,7 +16,7 @@ from sklearn.svm import SVR
 from sklearn.ensemble import RandomForestRegressor
 
 
-class Model(object):
+class Model:
     """ Class containing different models
 
     Parameters
@@ -47,6 +47,10 @@ class Model(object):
 
         self.x = pd.DataFrame()
         self.y = pd.DataFrame()
+        self.x_train = pd.DataFrame()
+        self.y_train = pd.DataFrame()
+        self.x_test = pd.DataFrame()
+        self.y_test = pd.DataFrame()
         self._model = []
 
         self.setup_model(**kwargs)
@@ -203,6 +207,3 @@ class Model(object):
                                  cv=kfold, scoring=metric)
 
         return scores
-
-
-
