@@ -1,4 +1,6 @@
-""" Method for normlizing the """
+# Licensed under the MIT License.
+
+""" Implemented methods for feature engineering """
 
 import abc
 import pandas as pd
@@ -8,6 +10,11 @@ class Minmax(object):
     """ Minmax class to transform and fit each column of a data frame
     to its corresponding minimum and maximum.
 
+    Parameters
+    ----------
+    input_range: Float, Default: (0,1)
+                 The target range with with the minmax class
+                 transforms the columns.
     """
 
     def __init__(self,
@@ -23,32 +30,22 @@ class Minmax(object):
         self.validate_input()
 
     def validate_input(self):
-        """
-
-        Returns
-        -------
-
+        """ validate inputs to the class
         """
 
         if self.input_range[0] > self.input_range[1]:
             raise ValueError('The first number should be lower than the second')
 
-    @abc.abstractmethod
-    def clean_for_fit(self):
-        pass
-
     def fit(self, df):
-        """
+        """ Function to fit to the min max and range of data
 
         Parameters
         ----------
-        df
-
-        Returns
-        -------
+        df: pd.DataFrame
+           Input dataframe for the fit method
 
         """
-
+        # check if the input is a dataframe
         if not isinstance(df, pd.DataFrame):
             raise ValueError('The input to the fit must be a dataframe')
         elif self.df.empty:
@@ -60,9 +57,11 @@ class Minmax(object):
         self.data_min = self.df.min()
         self.data_range = self.df.max()-self.df.min()
 
+        # define the transform scale ratio
         self.transform_ratio = (self.input_range[1] -
                                 self.input_range[0])/self.data_range
 
+        # calculate the new mimimum range for the data
         self.new_data_min = (self.input_range[0] -
                              self.data_min * self.transform_ratio)
 
@@ -71,15 +70,23 @@ class Minmax(object):
 
         Parameters
         ----------
-        df
+        df: pd.DataFrame
+           Input dataframe for the transformation using the previously used fit
+           method
 
         Returns
         -------
+        df_scaled: pd.DataFrame
+                   Normalized dataframe with minmax method
 
         """
 
         if not isinstance(df, pd.DataFrame):
             raise ValueError('The input to the transform must be a dataframe')
+
+        if len(self.data_range) == 0:
+            raise ValueError('Empty fit method variables, '
+                             'Use the fit method first')
 
         df_scaled = df.copy()
 
@@ -92,11 +99,14 @@ class Minmax(object):
 
         Parameters
         ----------
-        df
+        df: pd.DataFrame
+           Input dataframe for the inverse transform using the already fitted
+           params
 
         Returns
         -------
-
+        df_inv: pd.DataFrame
+                A dataframe using inverse minmax transform
         """
 
         df_inv = df.copy()
@@ -108,7 +118,6 @@ class Minmax(object):
 
 class Standard(object):
     """ Class method for standardization with mean and standard deviation
-
     """
 
     def __init__(self,
@@ -117,28 +126,11 @@ class Standard(object):
         self.std = []
         self.df = pd.DataFrame()
 
-        self.validate_input()
-
-    @abc.abstractmethod
-    def validate_input(self):
-        """
-
-        Returns
-        -------
-
-        """
-        pass
-
     def fit(self, df):
-        """
+        """ Method to compute the mean and std for the given dataframe
 
-        Parameters
-        ----------
-        df
-
-        Returns
-        -------
-
+        df: pd.DataFrame
+           Input dataframe for the fit method
         """
 
         self.df = df.copy()
@@ -149,12 +141,12 @@ class Standard(object):
     def transform(self, df):
         """
 
-        Parameters
-        ----------
-        df
+        df: pd.DataFrame
+           Input dataframe for the transformation using the previously used fit
+           method
 
-        Returns
-        -------
+        df_scaled: pd.DataFrame
+                   Normalized dataframe with standardization method
 
         """
 
@@ -169,11 +161,14 @@ class Standard(object):
 
         Parameters
         ----------
-        df
+        df: pd.DataFrame
+           Input dataframe for the inverse transform using the already fitted
+           params
 
         Returns
         -------
-
+        df_inv: pd.DataFrame
+                A dataframe using inverse standardization transform
         """
 
         df_inv = df.copy()

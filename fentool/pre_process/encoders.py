@@ -10,7 +10,7 @@ class Encoder(object):
     Parameters
     ----------
     encoder_type: String
-                 Sets the type of encoding for the data sets. Currenlty
+                 Sets the type of encoding for the data sets. Currently
                  one-hot encoding and ordinal encoding is available. The values
                  should be 'one-hot' or 'Ordinal'
 

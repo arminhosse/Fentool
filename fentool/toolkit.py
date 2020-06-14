@@ -18,6 +18,7 @@ logger.setLevel(logging.INFO)
 
 class Fentool(object):
     """ Fentool feature engineering tool
+
     Parameters
     ----------
     sup_learning_type: String
