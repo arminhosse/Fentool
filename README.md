@@ -43,22 +43,45 @@ input as well as feature importance features based on feature permutation techni
 
 An example for the usage can be found below:
 ```python 
+
+import os
+import seaborn as sns
+import pandas as pd
+
+from fentool.toolkit import Fentool
+
+# define file location
+RESOURCE_PATH = '%s/../fentool/tests/resources' % os.path.dirname(os.path.realpath(__file__))
+
+# read dataframe
+df = pd.read_csv(RESOURCE_PATH + '/sample_data.csv')
+
+# create fentool object
 fent = Fentool()
 
-models = ['linreg','lassocv']
-encoder_types =['one-hot']
+models = ['linreg', 'lassocv', 'svr']
+encoder_types = ['one-hot']
 input_trans = [None, 'normalize', 'standardize']
 output_trans = ['standardize']
 
+# run the loop on the combinations
 scores = fent.model_compare(models=models,
                             encoder_types=encoder_types,
                             input_trans=input_trans,
-                            output_trans = output_trans,
-                            df=TestFentool.df,
+                            output_trans=output_trans,
+                            df=df,
                             target='median_house_value')
 
+# plot the results
+plot = sns.boxplot(data=scores)
+plot.set_xticklabels(plot.get_xticklabels(), rotation=30)
 
 ```
+
+A sample run can be seen here:
+![Alt text](./notebooks/sample_result.png?raw=true "Sample results") 
+
+
 In the above example fentool combines the models, encoder types as well as input
 and output treatment effects and outputs a dataframe containing the combined use cases and their respective scoring.
 In addition to the treatment and encoding settings one needs to provide the dataframe as well as the target variable in that 

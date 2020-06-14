@@ -199,7 +199,7 @@ class Model(object):
         kfold = KFold(n_splits=n_splits, random_state=7, shuffle=shuffle)
 
         # evaluate scores on the different folds
-        scores = cross_val_score(self._model, x, y,
+        scores = cross_val_score(self._model, x, y.values.reshape(-1),
                                  cv=kfold, scoring=metric)
 
         return scores

@@ -15,7 +15,7 @@ df = pd.read_csv(RESOURCE_PATH + '/sample_data.csv')
 # create fentool object
 fent = Fentool()
 
-models = ['lassocv', 'svr']
+models = ['linreg', 'lassocv', 'svr']
 encoder_types = ['one-hot']
 input_trans = [None, 'normalize', 'standardize']
 output_trans = ['standardize']
