@@ -47,7 +47,7 @@ class Fentool(object):
                     standardization (mean and standard deviation) is implemented.
                     The values should be 'normalize' or 'standardize'.
 
-    time_series: Bool
+    time_series: bool, Default=False
                 Flag evaluating if the problem is a time series problem.
                 Currently Fentool does not have support for time-series.
 
