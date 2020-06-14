@@ -5,8 +5,10 @@ from collections import OrderedDict, defaultdict
 from copy import deepcopy
 import logging
 import warnings
+import abc
 
 import pandas as pd
+import seaborn as sns
 import numpy as np
 
 from fentool.pre_process.transformers import Minmax, Standard
@@ -86,9 +88,10 @@ class Fentool(object):
         self.target = []
         self.model = []
         self.df = pd.DataFrame()
-        self.df_trans = pd.DataFrame()
         self.x = pd.DataFrame()
         self.y = pd.DataFrame()
+        self.x_trans = pd.DataFrame()
+        self.y_trans = pd.DataFrame()
         self.validate_inputs()
         self.setup_model(**kwargs)
 
@@ -105,7 +108,9 @@ class Fentool(object):
                              '"regression models.')
         # check for the supported model types for assessing feature eng
         # effectiveness
-        if self.model_type not in ('linreg', 'lasso'):
+        if self.model_type not in ('linreg', 'lasso', 'lassocv',
+                                   'ridge', 'ridgecv', 'rfr', 'xgb'
+                                   'svr'):
             raise ValueError('Not supported model type {} '
                              .format(self.model_type))
 
@@ -187,7 +192,7 @@ class Fentool(object):
 
         # set up feature and target sets
         self.x = self.df.drop(columns=target)
-        self.y = self.df[target]
+        self.y = pd.DataFrame(self.df[target])
 
     def setup_model(self,**kwargs):
         """
@@ -201,9 +206,12 @@ class Fentool(object):
 
         """
 
-        self.model = Model(model_type=self.model_type, **kwargs)
+        self.model = Model(model_type=self.model_type,
+                           test_size=self.test_size,
+                           time_series=self.time_series
+                           , **kwargs)
 
-    def feature_transform(self, df):
+    def feature_encoder(self):
         """
 
         Parameters
@@ -214,9 +222,66 @@ class Fentool(object):
         -------
 
         """
-
+        # encode the feature set
         if self.encoder_type is not None:
             enc = Encoder(encoder_type=self.encoder_type)
+            self.x = enc.fit_transform(self.x)
+
+        # check to see if the target is a category variable
+        if self.y.dtypes.name == 'category':
+            self.y = pd.DataFrame(self.y.cat.codes)
+
+    def feature_transform(self):
+        """
+
+        Returns
+        -------
+
+        """
+
+        if self.input_treatment == 'normalize':
+            trans_input = Minmax()
+            trans_input.fit(self.x)
+            self.x_trans = trans_input.transform(self.x)
+
+        elif self.input_treatment == 'standardize':
+            trans_input = Standard()
+            trans_input.fit(self.x)
+            self.x_trans = trans_input.transform(self.x)
+        else:
+            self.x_trans = self.x.copy()
+
+        if self.output_treatment == 'normalize':
+            trans_output = Minmax()
+            trans_output.fit(self.y)
+            self.y_trans = trans_output.transform(self.y)
+
+        elif self.input_treatment == 'standardize':
+            trans_output = Standard()
+            trans_output.fit(self.y)
+            self.y_trans = trans_output.transform(self.y)
+
+        else:
+            self.y_trans = self.y.copy()
+
+    def prepar_fit_data(self, df, target):
+        """
+
+        Parameters
+        ----------
+        df
+        target
+
+        Returns
+        -------
+
+        """
+
+        self.setup_dataframe(df, target)
+
+        self.feature_encoder()
+
+        self.feature_transform()
 
     def fit(self, df, target):
         """
@@ -231,24 +296,49 @@ class Fentool(object):
 
         """
 
-        self.setup_datafram(df, target)
+        self.prepar_fit_data(df.copy(), target)
+
+        self.model.fit(self.x_trans, self.y_trans)
+
 
     @abc.abstractmethod
-    def evaluate_model(self):
+    def evaluate_model(self, df, target, n_splits=10,
+                       metric='r2', shuffle=True):
         """
 
         Returns
         -------
 
         """
-        pass
+        self.prepar_fit_data(df.copy(), target)
 
-    @abc.abstractmethod
-    def model_compare(self):
-        """
+        score = self.model.evaluate_model(self.x_trans, self.y_trans,
+                                          n_splits=n_splits,
+                                          metric=metric, shuffle=shuffle)
 
-        Returns
-        -------
+        return score
 
-        """
-        pass
+    @staticmethod
+    def model_compare(models, input_trans, output_trans, encoder_types,
+                      df, target, n_splits=10, boxplot=False,
+                      metric='r2'):
+
+        # loop over case names
+        scores = pd.DataFrame()
+        for modl in models:
+            for enc in encoder_types:
+                for in_trans in input_trans:
+                    for out_trans in output_trans:
+                        case = Fentool(encoder_type=enc,
+                                       model_type=modl,
+                                       input_treatment=in_trans,
+                                       output_treatment=out_trans)
+
+                        case_name = modl + '_' + enc + '_in' + \
+                                    str(in_trans)[:4] + '_out' + str(out_trans)[:4]
+
+                        scores[case_name] = case.evaluate_model(df=df, target=target,
+                                                                n_splits=n_splits,
+                                                                metric=metric)
+            
+        return scores

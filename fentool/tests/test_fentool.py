@@ -7,6 +7,7 @@ from fentool.toolkit import Fentool
 import pytest
 import os
 import pandas as pd
+import seaborn as sns
 
 from fentool.pre_process.encoders import Encoder
 from fentool.pre_process.transformers import Minmax
@@ -20,6 +21,7 @@ class TestFentool(TestCase):
     @classmethod
     def setUpClass(cls):
         cls.df = pd.read_csv(RESOURCE_PATH + '/sample_data.csv')
+        cls.df_mod = cls.df.dropna()
 
     def test_validate_inputs(self):
 
@@ -47,7 +49,7 @@ class TestFentool(TestCase):
         fent.df = TestFentool.df.copy()
         fent.clean_nans()
 
-        self.assertEqual(fent.df.shape,(2046,12),
+        self.assertEqual(fent.df.shape, (2046,12),
                          msg='Unexpected dataframe shape after nan removals')
 
         fent.df = TestFentool.df
@@ -84,7 +86,7 @@ class TestFentool(TestCase):
 
         self.assertEqual(fent.x.shape[0],
                          fent.y.shape[0],
-                         msg='Mismatchin number of rows between feature '
+                         msg='Mismatch in number of rows between feature '
                              'and target set')
 
     def test_setup_model(self):
@@ -94,6 +96,103 @@ class TestFentool(TestCase):
         self.assertTrue(hasattr(fent, 'model'),
                         msg='Missing model attribute')
 
+    def test_feature_encoder(self):
+
+        fent = Fentool(encoder_type='one-hot')
+
+        # test if the setup data frame issues a warning for nulls
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            fent.setup_dataframe(TestFentool.df, target='median_house_value')
+
+        fent.feature_encoder()
+
+        # TODO Needs to verify if other numerical formats should be included.
+        num_cols_x = fent.x.select_dtypes(exclude=['int', 'float', 'float64',
+                                                   'uint8', 'double']).columns
+
+        self.assertEqual(num_cols_x.shape[0], 0,
+                         msg="Detected un-encoded columns")
+
+        self.assertTrue(fent.y.dtypes[0] in ['int', 'float', 'float64', 'uint8',
+                                             'double'],
+                        msg="Detected categorical values for target")
+
     def test_feature_transform(self):
 
-        pass
+        fent = Fentool(encoder_type='one-hot', input_treatment='normalize',
+                       output_treatment='normalize')
+
+        # test if the setup data frame issues a warning for nulls
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            fent.setup_dataframe(TestFentool.df, target='median_house_value')
+
+        fent.feature_encoder()
+
+        self.assertTrue((fent.x_trans.max()==1).all(),
+                        msg="Detected max values outside of"
+                            " normalization range")
+
+        self.assertTrue((fent.x_trans.min()==0).all(),
+                        msg="Detected min values outside of "
+                            "normalization range")
+
+    def test_fit(self):
+
+        # test the fit with minmax normalization
+        fent = Fentool(encoder_type='one-hot', input_treatment='normalize',
+                       output_treatment='normalize')
+
+        fent.fit(TestFentool.df_mod, target='median_house_value')
+        self.assertAlmostEqual(fent.model._model.coef_.max(), 1.45, 2,
+                               msg="Unexpected fit coefficient with "
+                                   "sample data")
+
+        self.assertAlmostEqual(fent.model.score(), 0.66, 1,
+                               msg="Unexpected model score on test date")
+
+        # test the fit with standard scaler
+        fent = Fentool(encoder_type='one-hot', input_treatment='standardize',
+                       output_treatment='standardize')
+
+        fent.fit(TestFentool.df_mod, target='median_house_value')
+        self.assertAlmostEqual(fent.model._model.coef_.max(), 0.68, 1,
+                               msg="Unexpected fit coefficient with "
+                                   "sample data")
+
+        self.assertAlmostEqual(fent.model.score(), 0.68, 1,
+                               msg="Unexpected model score on test date")
+
+    def test_evaluate_model(self):
+
+        fent = Fentool(encoder_type='one-hot', input_treatment='normalize',
+                       output_treatment='normalize')
+
+        score = fent.evaluate_model(TestFentool.df
+                                    , target='median_house_value')
+
+        self.assertAlmostEqual(score.mean(), 0.65, 1,
+                               msg="Unexpected model score on cross validation")
+
+    def test_model_compare(self):
+
+        fent = Fentool()
+
+        models = ['linreg']
+        encoder_types =['one-hot']
+        input_trans = [None, 'normalize', 'standardize']
+        output_trans = ['standardize']
+
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            scores = fent.model_compare(models=models,
+                                        encoder_types=encoder_types,
+                                        input_trans=input_trans,
+                                        output_trans = output_trans,
+                                        df=TestFentool.df,
+                                        target='median_house_value')
+
+
+        self.assertEqual(scores.shape, (10,3), msg="Missing score number "
+                                                   "for one of the cases")

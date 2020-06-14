@@ -7,9 +7,8 @@ import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import KFold
 from sklearn.model_selection import cross_val_score
-from sklearn.model_selection import cross_validate
 
-from sklearn.linear_model import LinearRegression
+
 from sklearn.linear_model import LinearRegression
 from sklearn.linear_model import Lasso, LassoCV
 from sklearn.linear_model import Ridge, RidgeCV
@@ -34,7 +33,7 @@ class Model(object):
 
         self.x = pd.DataFrame()
         self.y = pd.DataFrame()
-        self.model = []
+        self._model = []
 
         self.setup_model(**kwargs)
 
@@ -65,9 +64,21 @@ class Model(object):
         """
 
         if self.model_type is 'linreg':
-            self.model = LinearRegression(**kwargs)
+            self._model = LinearRegression(**kwargs)
         elif self.model_type is 'lasso':
-            self.model = Lasso(**kwargs)
+            self._model = Lasso(**kwargs)
+        elif self.model_type is 'lassocv':
+            self._model = LassoCV(**kwargs)
+        elif self.model_type is 'ridge':
+            self._model = Ridge(**kwargs)
+        elif self.model_type is 'ridgecv':
+            self._model = RidgeCV(**kwargs)
+        elif self.model_type is 'rfr':
+            self._model = RandomForestRegressor(**kwargs)
+        elif self.model_type is 'xgb':
+            self._model = XGBRegressor(**kwargs)
+        elif self.model_type is 'svr':
+            self._model = SVR(**kwargs)
         else:
             raise ValueError(
                 "The model type {} is not supported".format(self.model_type))
@@ -122,7 +133,7 @@ class Model(object):
         self.train_test_split_()
 
         # fit the model
-        self.model.fit(self.x, self.y)
+        self._model.fit(self.x, self.y)
 
     def predict(self, x):
         """
@@ -135,19 +146,23 @@ class Model(object):
         -------
 
         """
-        return self.model.predict(x)
+        return self._model.predict(x)
 
-    @abc.abstractmethod
     def score(self, set_type='test'):
-        pass
 
-    def evaluate_model(self, n_splits=10, metric='r2', shuffle=True):
+        if set_type is 'train':
+            score = self._model.score(self.x_train, self.y_train)
+        elif set_type is 'test':
+            score = self._model.score(self.x_test, self.y_test)
+        return score
+
+    def evaluate_model(self, x, y, n_splits=10, metric='r2', shuffle=True):
 
         # create the folds
         kfold = KFold(n_splits=n_splits, random_state=7, shuffle=shuffle)
 
         # evalute scores on the different folds
-        scores = cross_val_score(self.model, self.x, self.y,
+        scores = cross_val_score(self._model, x, y,
                                  cv=kfold, scoring=metric)
 
         return scores

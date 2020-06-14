@@ -60,6 +60,8 @@ class Encoder(object):
 
         elif self.encoder_type == 'one-hot':
             df_enc = pd.get_dummies(df_enc)
+            for col in df_enc.columns:
+                df_enc[col] = pd.to_numeric(df_enc[col])
 
         else:
             raise ValueError("Unrecognized encoder type {}".

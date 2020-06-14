@@ -107,18 +107,77 @@ class Minmax(object):
 
 
 class Standard(object):
+    """ Class method for standardization with mean and standard deviation
 
-    def __init__(self):
-        pass
+    """
+
+    def __init__(self,
+                 ):
+        self.mean = []
+        self.std = []
+        self.df = pd.DataFrame()
+
+        self.validate_input()
 
     @abc.abstractmethod
+    def validate_input(self):
+        """
+
+        Returns
+        -------
+
+        """
+        pass
+
     def fit(self, df):
-        pass
+        """
 
-    @abc.abstractmethod
+        Parameters
+        ----------
+        df
+
+        Returns
+        -------
+
+        """
+
+        self.df = df.copy()
+
+        self.mean = df.mean()
+        self.std = df.std()
+
     def transform(self, df):
-        pass
+        """
 
-    @abc.abstractmethod
+        Parameters
+        ----------
+        df
+
+        Returns
+        -------
+
+        """
+
+        df_scaled = df.copy()
+
+        df_scaled = (df_scaled - self.mean)/self.std
+
+        return df_scaled
+
     def inverse_transform(self, df):
-        pass
+        """
+
+        Parameters
+        ----------
+        df
+
+        Returns
+        -------
+
+        """
+
+        df_inv = df.copy()
+
+        df_inv = (df_inv * self.std) + self.mean
+
+        return df_inv

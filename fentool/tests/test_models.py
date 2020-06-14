@@ -40,14 +40,14 @@ class TestModel(TestCase):
         my_model = Model(model_type='linreg')
         mock_model = LinearRegression()
 
-        self.assertTrue(type(my_model.model) == type(mock_model),
+        self.assertTrue(type(my_model._model) == type(mock_model),
                         msg='Mismatch in initialized '
                             'model {}'.format(mock_model))
 
         my_model = Model(model_type='lasso')
         mock_model = Lasso()
 
-        self.assertTrue(type(my_model.model) == type(mock_model),
+        self.assertTrue(type(my_model._model) == type(mock_model),
                         msg='Mismatch in initialized '
                             'model {}'.format(mock_model))
 
@@ -82,11 +82,11 @@ class TestModel(TestCase):
         # only call the fit to update all the variables
         my_model.fit(TestModel.x, TestModel.y)
 
-        self.assertAlmostEqual(my_model.model.coef_.max(), 1.45, 1,
+        self.assertAlmostEqual(my_model._model.coef_.max(), 1.45, 1,
                                msg='Maximum coefficient mismatch'
                                    ' for the fitted model')
 
-        self.assertEqual(my_model.model.coef_.shape[0], 14,
+        self.assertEqual(my_model._model.coef_.shape[0], 14,
                                msg='Wrong number of model coefficients!')
 
     def test_setup_feature_target(self):

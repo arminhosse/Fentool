@@ -6,7 +6,7 @@ import os
 import pandas as pd
 
 from fentool.pre_process.encoders import Encoder
-from fentool.pre_process.transformers import Minmax
+from fentool.pre_process.transformers import Minmax, Standard
 
 
 RESOURCE_PATH = '%s/resources' % os.path.dirname(os.path.realpath(__file__))
@@ -37,7 +37,7 @@ class TestMinMax(TestCase):
         # check to see if the fit function has updated the
         self.assertTrue(prep.df.empty!=True,  msg="minmax fit method failed")
 
-    def test_fit_transofrm(self):
+    def test_transform(self):
         # build the minmax function
         prep = Minmax()
 
@@ -74,3 +74,58 @@ class TestMinMax(TestCase):
         self.assertAlmostEqual(df_org.values.all(),
                                TestMinMax.df_enc.values.all(),
                                msg="inverse minmax gives different results")
+
+
+class TestStandard(TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.df = pd.read_csv(RESOURCE_PATH + '/sample_data.csv')
+        cls.df = cls.df.dropna()
+
+        enc = Encoder()
+        cls.df_enc = enc.fit_transform(cls.df)
+
+    def test_fit(self):
+        # build the minmax function
+        prep = Standard()
+
+        # fit to the sample dataframe
+        prep.fit(pd.get_dummies(TestStandard.df_enc.copy()))
+
+        # check to see if the fit function has updated the
+        self.assertTrue(prep.df.empty!=True,  msg="Standard fit method failed")
+
+    def test_transform(self):
+        # build the minmax function
+        prep = Standard()
+
+        # fit to the sample dataframe
+        prep.fit(pd.get_dummies(TestStandard.df_enc.copy()))
+
+        # use the minmax transform with the fit parameters
+        df_scaled = prep.transform(TestStandard.df_enc.copy())
+
+        # assert to see if the min and max match the given default range
+        self.assertAlmostEqual(max(round(df_scaled.mean())), 0.0, 1,
+                               msg="Standardized data mean deviates from 0")
+
+
+    def test_inverse_transform(self):
+
+        # build the minmax function
+        prep = Standard()
+
+        # fit to the sample dataframe
+        prep.fit(pd.get_dummies(TestStandard.df_enc.copy()))
+
+        # use the minmax transform with the fit parameters
+        df_norm = prep.transform(TestStandard.df_enc.copy())
+
+        # inverse the transformation
+        df_org = prep.inverse_transform(df_norm)
+
+        # check to see if the inverse gives the same result
+        self.assertAlmostEqual(df_org.values.all(),
+                               TestStandard.df_enc.values.all(),
+                               msg="inverse standard gives different results")
