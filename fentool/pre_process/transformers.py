@@ -1,73 +1,7 @@
-"""A wrapper for different pre processing method classes"""
+""" Method for normlizing the """
 
+import abc
 import pandas as pd
-import numpy as np
-
-
-class Encoder(object):
-    """ Encoder class for numerical and categorical data sets.
-
-    """
-    def __init__(self,
-                 encoder_type='one-hot'):
-        self.encoder_type = encoder_type
-        self.cat_cols = []
-
-    def verify_input(self):
-        """ verify the input settings for the encoder.
-
-        Returns
-        -------
-
-        """
-        if self.encoder_type not in ('one-hot','ordinal'):
-            raise ValueError("The encoder must be one-hot or ordinal")
-
-    @staticmethod
-    def auto_detect_categorical(df):
-        """
-
-        Parameters
-        ----------
-        df
-
-        Returns
-        -------
-
-        """
-
-        categorical_cols = df.select_dtypes(exclude=['int', 'float',
-                                                     'double']).columns
-        return categorical_cols
-
-    def fit_transform(self, df):
-        """
-
-        Parameters
-        ----------
-        df
-
-        Returns
-        -------
-
-        """
-
-        df_enc = df.copy()
-
-        if self.encoder_type == 'ordinal':
-            self.cat_cols = self.auto_detect_categorical(df_enc)
-            for col in self.cat_cols:
-                df_enc[col] = df_enc[col].astype('category')
-                df_enc[col] = df_enc[col].cat.codes
-
-        elif self.encoder_type == 'one-hot':
-            df_enc = pd.get_dummies(df_enc)
-
-        else:
-            raise ValueError("Unrecognized encoder type {}".
-                             format(self.encoder_type))
-
-        return df_enc
 
 
 class Minmax(object):
@@ -99,8 +33,8 @@ class Minmax(object):
         if self.input_range[0] > self.input_range[1]:
             raise ValueError('The first number should be lower than the second')
 
+    @abc.abstractmethod
     def clean_for_fit(self):
-
         pass
 
     def fit(self, df):
@@ -177,11 +111,14 @@ class Standard(object):
     def __init__(self):
         pass
 
+    @abc.abstractmethod
     def fit(self, df):
         pass
 
+    @abc.abstractmethod
     def transform(self, df):
         pass
 
+    @abc.abstractmethod
     def inverse_transform(self, df):
         pass

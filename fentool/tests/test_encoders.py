@@ -1,11 +1,9 @@
-"""Unittest wrapper for different feature engineering methods"""
-
 from unittest import TestCase, skipUnless
 import pytest
 import os
 import pandas as pd
 
-from fentool.pre_process import Encoder, Minmax, Standard
+from fentool.pre_process.encoders import Encoder
 
 RESOURCE_PATH = '%s/resources' % os.path.dirname(os.path.realpath(__file__))
 
@@ -29,7 +27,7 @@ class TestEncoder(TestCase):
 
         # test the ordinal
         enc = Encoder('ordinal')
-        df_enc = enc.fit_transform(TestEncoder.df)
+        df_enc = enc.fit_transform(TestEncoder.df.copy())
 
         self.assertTrue((TestEncoder.df.columns == df_enc.columns).all()
                         , msg="Mismatch in df columns after ordinal encoder")
@@ -47,26 +45,3 @@ class TestEncoder(TestCase):
         self.assertTrue(df_enc.columns.shape == (15,),
                         msg="Mismatch in df columns after ordinal encoder")
 
-
-class TestMinMax(TestCase):
-
-    @classmethod
-    def setUpClass(cls):
-        cls.df = pd.read_csv(RESOURCE_PATH + '/sample_data.csv')
-        enc = Encoder()
-        cls.df_enc = enc.fit(cls.df)
-
-    def test_validate_inputs(self):
-
-        prep = Minmax(input_range=(0, 1))
-
-        self.assertTrue(prep.input_range == (0, 1),
-                        msg="desired range not assigned properly")
-
-    def test_fit(self):
-
-        prep = Minmax()
-
-        prep.fit(pd.get_dummies(TestMinMax.df_enc))
-
-        print(prep)
