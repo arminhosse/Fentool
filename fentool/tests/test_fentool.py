@@ -193,6 +193,5 @@ class TestFentool(TestCase):
                                         df=TestFentool.df,
                                         target='median_house_value')
 
-
         self.assertEqual(scores.shape, (10,3), msg="Missing score number "
                                                    "for one of the cases")
