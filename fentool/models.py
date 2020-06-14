@@ -14,7 +14,6 @@ from sklearn.linear_model import Lasso, LassoCV
 from sklearn.linear_model import Ridge, RidgeCV
 from sklearn.svm import SVR
 from sklearn.ensemble import RandomForestRegressor
-from xgboost import XGBRegressor
 
 
 class Model(object):
@@ -75,8 +74,6 @@ class Model(object):
             self._model = RidgeCV(**kwargs)
         elif self.model_type is 'rfr':
             self._model = RandomForestRegressor(**kwargs)
-        elif self.model_type is 'xgb':
-            self._model = XGBRegressor(**kwargs)
         elif self.model_type is 'svr':
             self._model = SVR(**kwargs)
         else:
